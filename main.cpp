@@ -6,9 +6,77 @@
 #include <vector>
 
 using namespace std;
-void rellenarMatriz(int ciudades[100][100], int *fila);
 
-int caminoMinimo(int ciudades[100][100], vector<vector<int>> recorridos, int *indiceMinCamino);
+const bool DEBUG_INFO = true;
+
+/* START DEPRECATED
+void rellenarMatriz(int ciudades[100][100], int& tamanio){    //toDo: Falta hacer que se pueda pasar el fichero por arv
+    ifstream datos("C:\\Users\\samue\\Desktop\\AlgoritmiaBasica\\Practica\\a4.tsp");
+    string linea;
+    int filas = 0;
+    while (getline(datos,linea)){
+        stringstream s_stream(linea);
+        string substr;
+        int columna = 0;
+        while (s_stream >> substr){
+            int numero = stoi(substr);
+            ciudades[filas][columna] = numero;
+            columna++;
+        }
+        filas++;
+    }
+    tamanio = filas;
+}
+
+
+
+
+//metodo que recorre los caminos y compara cual es el menor
+int caminoMinimo(int ciudades[100][100], vector<vector<int>> caminos, int *indiceCaminoMin) {
+    int min = INT_MAX;
+
+    for (int i = 0; i < caminos.size(); i++) {
+        int coste = 0;
+        for (int j = 0; j < caminos.at(i).size(); j++) {
+            if(j == caminos.at(i).size() - 1){
+                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(0)];
+            }else{
+                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(j + 1)];
+            }
+        }
+        //Comprobamos si el es camino con < coste y asignamos indice
+        if(coste < min){
+            min = coste;
+            *indiceCaminoMin = i;
+        }
+
+    }
+    return min;
+}
+
+//metodo que recorre los caminos y compara cual es el menor
+int caminoMinimo(std::vector<std::vector<int>> ciudades, vector<vector<int>> caminos, int *indiceCaminoMin) {
+    int min = INT_MAX;
+
+    for (int i = 0; i < caminos.size(); i++) {
+        int coste = 0;
+        for (int j = 0; j < caminos.at(i).size(); j++) {
+            if(j == caminos.at(i).size() - 1){
+                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(0)];
+            }else{
+                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(j + 1)];
+            }
+        }
+        //Comprobamos si el es camino con < coste y asignamos indice
+        if(coste < min){
+            min = coste;
+            *indiceCaminoMin = i;
+        }
+
+    }
+    return min;
+}
+
 
 vector<vector<int>> generaCaminosRecursivo(int dim, vector<int>preludio)    {
     vector<vector<int>> caminos;
@@ -38,70 +106,111 @@ vector<vector<int>> generaCaminos(int dim)    {
     }
     return caminos;
 }
+END DEPRECATED */
+
+std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio)   {    //toDo: Falta hacer que se pueda pasar el fichero por arv
+    std::vector<std::vector<int>> m;
+    ifstream datos(datosEntrada);
+    string linea;
+    int filas = 0;
+    while (getline(datos,linea)){
+        m.emplace_back();
+        stringstream s_stream(linea);
+        string substr;
+        while (s_stream >> substr){
+            int numero = stoi(substr);
+            m[filas].push_back(numero);
+        }
+        filas++;
+    }
+    tamanio = filas;
+    return m;
+}
+
+int valorarCamino(const std::vector<std::vector<int>>& costes, std::vector<int> camino) {
+    int coste = 0;
+    for (int j = 0; j < camino.size(); j++) {
+        if(j == camino.size() - 1){
+            coste = coste + costes[camino[j]][camino[0]];
+        } else {
+            coste = coste + costes[camino[j]][camino[j + 1]];
+        }
+    }
+    return coste;
+}
 
 
+int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
+    if(preludio.size() == dim)    {
+        mejor = preludio;
+        return valorarCamino(costes, preludio);
+    }
+    else {
+        int minimo = INT_MAX;
+        int aux;
+        std::vector<int> auxCamino;
+        for(int j = 0; j < dim; j++)    {
+            if(find(preludio.begin(), preludio.end(), j) == preludio.end()) {
+                vector<int> preludioSiguiente = preludio;
+                preludioSiguiente.push_back(j);
+                aux = obtenMejorRecursivo(costes, dim, preludioSiguiente, auxCamino);
+                if (aux != -1 && aux < minimo) {   // No ha encontrado caminos validos con preludio [preludio]U[j]
+                    minimo = aux;
+                    mejor = auxCamino;
+                    if(DEBUG_INFO)  {
+                        cout << "Profundidad " << preludio.size() << endl;
+                        cout << "Encontrado un mejor camino, coste = " << minimo << " :";
+                        for (auto& i : mejor) {
+                            cout << i << " -> ";
+                        }
+                        cout << mejor[0] << endl;
+                    }
+                }
+            }
+        }
+        if(minimo != INT_MAX) return minimo;    // Devuelve el mínimo coste encontrado
+        else return -1;     // No ha encontrado ningun camino válido con preludio [preludio]
+    }
+}
+
+int obtenMejor(const std::vector<std::vector<int>>& costes, int dim, vector<int>& mejor)    {
+    int mejorCoste = INT_MAX;
+    vector<int> preludio(1);
+    preludio.at(0) = 0;
+    int aux = obtenMejorRecursivo(costes, dim, preludio, mejor);
+    if (aux != -1 && aux < mejorCoste) {   // No ha encontrado caminos validos con preludio [preludio]U[j]
+        mejorCoste = aux;
+        if(DEBUG_INFO)  {
+            cout << "Encontrado el mejor camino, coste = " << mejorCoste << " :";
+            for (auto& i : mejor) {
+                cout << i << " -> ";
+            }
+            cout << mejor[0] << endl;
+        }
+    }
+    return mejorCoste;
+}
 
 
 
 int main() {
-
-    // Mirar si se puede mejorar mas fijo
-    int ciudades[100][100];                     //toDo: Mirar a ver si podemos hacerlo de alguna otra forma
+    string fichero = R"(C:\Users\samue\Desktop\AlgoritmiaBasica\Practica\a4.tsp)"; // Paso como argumento ?
     int filas;
-    rellenarMatriz(ciudades, &filas);
-    vector<vector<int>> caminos = generaCaminos(filas);
+    //rellenarMatriz(ciudades, filas);
+    auto m = getMatriz(fichero, filas);
 
-   //asigno -1 en el indice del recorrido
-    int camino = -1;
-    int nMin = caminoMinimo(ciudades, caminos, &camino);
+    //asigno -1 en el indice del recorrido
+    std::vector<int> mejorCamino;
+    //int nMin = caminoMinimo(ciudades, caminos, &camino);
+    int costeMinimo = obtenMejor(m, filas, mejorCamino);
 
-    for (int i = 0; i < caminos.at(camino).size(); ++i) {
-        cout << caminos.at(camino).at(i) << " - ";
+    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
+    for (auto& i : mejorCamino) {
+        cout << i << " -> ";
     }
-    cout << caminos.at(camino).at(0);
+    cout << mejorCamino.at(0);
     cout<<"\n";
-    cout << "coste: " << nMin << "\n";
     return 0;
 
-
-}
-//metodo que recorre los caminos y compara cual es el menor
-int caminoMinimo(int ciudades[100][100], vector<vector<int>> caminos, int *indiceCaminoMin) {
-    int min = INT_MAX;
-
-    for (int i = 0; i < caminos.size(); i++) {
-        int coste = 0;
-        for (int j = 0; j < caminos.at(i).size(); j++) {
-            if(j == caminos.at(i).size() - 1){
-                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(0)];
-            }else{
-                coste = coste + ciudades[caminos.at(i).at(j)][caminos.at(i).at(j + 1)];
-            }
-        }
-        //Comprobamos si el es camino con < coste y asignamos indice
-        if(coste < min){
-            min = coste;
-            *indiceCaminoMin = i;
-        }
-
-    }
-    return min;
 }
 
-void rellenarMatriz(int ciudades[100][100], int *tamanio){    //toDo: Falta hacer que se pueda pasar el fichero por arv
-    ifstream datos("datos");
-    string linea;
-    int filas = 0;
-    while (getline(datos,linea)){
-        stringstream s_stream(linea);
-        string substr;
-        int columna = 0;
-        while (s_stream >> substr){
-            int numero = stoi(substr);
-            ciudades[filas][columna] = numero;
-            columna++;
-        }
-        filas++;
-    }
-    *tamanio = filas;
-}
