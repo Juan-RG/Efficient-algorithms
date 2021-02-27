@@ -194,7 +194,7 @@ int obtenMejor(const std::vector<std::vector<int>>& costes, int dim, vector<int>
 
 
 int main() {
-    string fichero = R"(C:\Users\samue\Desktop\AlgoritmiaBasica\Practica\a4.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a4.tsp)"; // Paso como argumento ?
     int filas;
     //rellenarMatriz(ciudades, filas);
     auto m = getMatriz(fichero, filas);
