@@ -1,3 +1,0 @@
-C:/Users/Juan/Desktop/juan uni/1-segundo Cuatri sinc/1-segundo Cuatri/Algoritmia basica/Practicas/P1Repo/cmake-build-debug/CMakeFiles/P1Repo.dir
-C:/Users/Juan/Desktop/juan uni/1-segundo Cuatri sinc/1-segundo Cuatri/Algoritmia basica/Practicas/P1Repo/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Juan/Desktop/juan uni/1-segundo Cuatri sinc/1-segundo Cuatri/Algoritmia basica/Practicas/P1Repo/cmake-build-debug/CMakeFiles/rebuild_cache.dir
