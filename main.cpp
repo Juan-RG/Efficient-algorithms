@@ -9,6 +9,8 @@ using namespace std;
 
 const bool DEBUG_INFO = true;
 
+const bool DEBUG_INFO_EXTENDED = DEBUG_INFO & false;
+
 /* START DEPRECATED
 void rellenarMatriz(int ciudades[100][100], int& tamanio){    //toDo: Falta hacer que se pueda pasar el fichero por arv
     ifstream datos("C:\\Users\\samue\\Desktop\\AlgoritmiaBasica\\Practica\\a4.tsp");
@@ -108,7 +110,8 @@ vector<vector<int>> generaCaminos(int dim)    {
 }
 END DEPRECATED */
 
-std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio)   {    //toDo: Falta hacer que se pueda pasar el fichero por arv
+// Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
+std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio)   {
     std::vector<std::vector<int>> m;
     ifstream datos(datosEntrada);
     string linea;
@@ -127,19 +130,26 @@ std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio
     return m;
 }
 
+// Dado un camino, devuelve el coste
 int valorarCamino(const std::vector<std::vector<int>>& costes, std::vector<int> camino) {
     int coste = 0;
     for (int j = 0; j < camino.size(); j++) {
         if(j == camino.size() - 1){
-            coste = coste + costes[camino[j]][camino[0]];
+            if(costes[camino[j]][camino[0]] == 0) return -1;    // Camino cortado, valor 0
+            else {
+                coste = coste + costes[camino[j]][camino[0]];
+            }
         } else {
-            coste = coste + costes[camino[j]][camino[j + 1]];
+            if(costes[camino[j]][camino[j + 1]] == 0) return -1;
+            else {
+                coste = coste + costes[camino[j]][camino[j + 1]];
+            }
         }
     }
     return coste;
 }
 
-
+// Algoritmo recursivo de fuerza bruta
 int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
     if(preludio.size() == dim)    {
         mejor = preludio;
@@ -150,7 +160,7 @@ int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, ve
         int aux;
         std::vector<int> auxCamino;
         for(int j = 0; j < dim; j++)    {
-            if(find(preludio.begin(), preludio.end(), j) == preludio.end()) {
+            if(find(preludio.begin(), preludio.end(), j) == preludio.end()) {   // Si no está en el camino
                 vector<int> preludioSiguiente = preludio;
                 preludioSiguiente.push_back(j);
                 aux = obtenMejorRecursivo(costes, dim, preludioSiguiente, auxCamino);
@@ -191,6 +201,37 @@ int obtenMejor(const std::vector<std::vector<int>>& costes, int dim, vector<int>
     return mejorCoste;
 }
 
+int obtenMejorPermutaciones(const std::vector<std::vector<int>>& costes, int dim, vector<int>& mejor)    {
+    int mejorCoste = INT_MAX, costeAux;
+    vector<int> aux;
+    for(int i = 0; i < dim; i++)
+        aux.push_back(i);   // Crea el primer camino
+
+    do {
+        if(DEBUG_INFO_EXTENDED)  {
+            cout << "nuevo camino ";
+            for (auto& i : aux) {
+                cout << i << " -> ";
+            }
+            cout << aux[0] << endl;
+        }
+        costeAux = valorarCamino(costes, aux);
+        if(costeAux < mejorCoste)   {
+            mejorCoste = costeAux;
+            mejor = aux;
+            if(DEBUG_INFO)  {
+                cout << "Encontrado un mejor camino, coste = " << mejorCoste << " :";
+                for (auto& i : mejor) {
+                    cout << i << " -> ";
+                }
+                cout << mejor[0] << endl;
+            }
+        }
+    } while (next_permutation( ++(aux.begin()), aux.end()));
+
+    return mejorCoste;
+}
+
 
 
 int main() {
@@ -202,7 +243,7 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
-    int costeMinimo = obtenMejor(m, filas, mejorCamino);
+    int costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
@@ -211,6 +252,5 @@ int main() {
     cout << mejorCamino.at(0);
     cout<<"\n";
     return 0;
-
 }
 
