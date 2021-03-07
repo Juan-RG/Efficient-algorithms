@@ -4,10 +4,11 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
-const bool DEBUG_INFO = true;
+const bool DEBUG_INFO = false;
 
 const bool DEBUG_INFO_EXTENDED = DEBUG_INFO & false;
 
@@ -237,20 +238,31 @@ int obtenMejorPermutaciones(const std::vector<std::vector<int>>& costes, int dim
 int main() {
     string fichero = R"(C:\Users\samue\Desktop\AlgoritmiaBasica\Practica\a4.tsp)"; // Paso como argumento ?
     int filas;
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
+
     //rellenarMatriz(ciudades, filas);
     auto m = getMatriz(fichero, filas);
 
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
+    auto tInit = chrono::high_resolution_clock::now();
     int costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    auto tEnd = chrono::high_resolution_clock::now();
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
         cout << i << " -> ";
     }
-    cout << mejorCamino.at(0);
-    cout<<"\n";
+    cout << mejorCamino.at(0) << endl;
+    chrono::duration<double, std::milli> ms_double = tEnd - tInit;
+    cout << "Execution time: " << ms_double.count() << "ms" << endl;
+
+
     return 0;
 }
 
