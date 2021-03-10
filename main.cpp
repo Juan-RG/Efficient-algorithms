@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -150,7 +151,7 @@ double valorarCamino(const std::vector<std::vector<double>>& costes, std::vector
 }
 
 // Algoritmo recursivo de fuerza bruta
-int obtenMejorRecursivo(const std::vector<std::vector<double>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
+int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
     if(preludio.size() == dim)    {
         mejor = preludio;
         return valorarCamino(costes, preludio);
@@ -235,8 +236,14 @@ double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, i
 
 
 int main() {
-    string fichero = R"(..\a14.tsp)"; // Paso como argumento ?
+    string fichero = R"(C:\Users\samue\Desktop\AlgoritmiaBasica\Practica\a4.tsp)"; // Paso como argumento ?
     int filas;
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
+
     //rellenarMatriz(ciudades, filas);
     auto m = getMatriz(fichero, filas);
 
@@ -245,13 +252,19 @@ int main() {
     std::vector<int> mejorCamino;
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
     double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    auto tInit = chrono::high_resolution_clock::now();
+    int costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    auto tEnd = chrono::high_resolution_clock::now();
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
         cout << i << " -> ";
     }
-    cout << mejorCamino.at(0);
-    cout<<"\n";
+    cout << mejorCamino.at(0) << endl;
+    chrono::duration<double, std::milli> ms_double = tEnd - tInit;
+    cout << "Execution time: " << ms_double.count() << "ms" << endl;
+
+
     return 0;
 }
 
