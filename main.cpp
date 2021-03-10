@@ -111,8 +111,8 @@ vector<vector<int>> generaCaminos(int dim)    {
 END DEPRECATED */
 
 // Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
-std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio)   {
-    std::vector<std::vector<int>> m;
+std::vector<std::vector<double>> getMatriz(const string& datosEntrada, int& tamanio)   {
+    std::vector<std::vector<double>> m;
     ifstream datos(datosEntrada);
     string linea;
     int filas = 0;
@@ -121,7 +121,7 @@ std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio
         stringstream s_stream(linea);
         string substr;
         while (s_stream >> substr){
-            int numero = stoi(substr);
+            double numero = stod(substr);
             m[filas].push_back(numero);
         }
         filas++;
@@ -131,8 +131,8 @@ std::vector<std::vector<int>> getMatriz(const string& datosEntrada, int& tamanio
 }
 
 // Dado un camino, devuelve el coste
-int valorarCamino(const std::vector<std::vector<int>>& costes, std::vector<int> camino) {
-    int coste = 0;
+double valorarCamino(const std::vector<std::vector<double>>& costes, std::vector<int> camino) {
+    double coste = 0;
     for (int j = 0; j < camino.size(); j++) {
         if(j == camino.size() - 1){
             if(costes[camino[j]][camino[0]] == 0) return -1;    // Camino cortado, valor 0
@@ -150,7 +150,7 @@ int valorarCamino(const std::vector<std::vector<int>>& costes, std::vector<int> 
 }
 
 // Algoritmo recursivo de fuerza bruta
-int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
+int obtenMejorRecursivo(const std::vector<std::vector<double>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
     if(preludio.size() == dim)    {
         mejor = preludio;
         return valorarCamino(costes, preludio);
@@ -182,8 +182,8 @@ int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, ve
         else return -1;     // No ha encontrado ningun camino válido con preludio [preludio]
     }
 }
-
-int obtenMejor(const std::vector<std::vector<int>>& costes, int dim, vector<int>& mejor)    {
+/*
+int obtenMejor(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor)    {
     int mejorCoste = INT_MAX;
     vector<int> preludio(1);
     preludio.at(0) = 0;
@@ -200,9 +200,9 @@ int obtenMejor(const std::vector<std::vector<int>>& costes, int dim, vector<int>
     }
     return mejorCoste;
 }
-
-int obtenMejorPermutaciones(const std::vector<std::vector<int>>& costes, int dim, vector<int>& mejor)    {
-    int mejorCoste = INT_MAX, costeAux;
+*/
+double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor)    {
+    double mejorCoste = INT_MAX, costeAux;
     vector<int> aux;
     for(int i = 0; i < dim; i++)
         aux.push_back(i);   // Crea el primer camino
@@ -235,15 +235,16 @@ int obtenMejorPermutaciones(const std::vector<std::vector<int>>& costes, int dim
 
 
 int main() {
-    string fichero = R"(..\a4.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a14.tsp)"; // Paso como argumento ?
     int filas;
     //rellenarMatriz(ciudades, filas);
     auto m = getMatriz(fichero, filas);
 
+
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
-    int costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
