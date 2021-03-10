@@ -151,7 +151,7 @@ double valorarCamino(const std::vector<std::vector<double>>& costes, std::vector
 }
 
 // Algoritmo recursivo de fuerza bruta
-int obtenMejorRecursivo(const std::vector<std::vector<int>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
+int obtenMejorRecursivo(const std::vector<std::vector<double>>& costes, int dim, vector<int>preludio, vector<int>& mejor)    {
     if(preludio.size() == dim)    {
         mejor = preludio;
         return valorarCamino(costes, preludio);
@@ -236,7 +236,7 @@ double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, i
 
 
 int main() {
-    string fichero = R"(C:\Users\samue\Desktop\AlgoritmiaBasica\Practica\a4.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a13.tsp)"; // Paso como argumento ?
     int filas;
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -251,9 +251,8 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
-    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
     auto tInit = chrono::high_resolution_clock::now();
-    int costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
