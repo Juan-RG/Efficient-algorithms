@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <numeric>
 
 using namespace std;
 
@@ -110,6 +111,75 @@ vector<vector<int>> generaCaminos(int dim)    {
     return caminos;
 }
 END DEPRECATED */
+
+
+struct nodo{
+    double valor;
+    std::vector<int> preludio;
+
+    bool operator< (const nodo &a) {
+        return valor < a.valor;
+    }
+
+};
+
+
+/**
+ * revisar algo estoy haciendo mal
+ * @param costes
+ * @param dim
+ * @param mejor
+ * @return
+ */
+int obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
+
+
+    /*
+    vector<nodo> frontera;
+    for (int i = 1; i < dim; ++i) {
+                nodo pareja;
+                pareja.valor = costes.at(0).at(i);
+                pareja.preludio.push_back(i);
+                frontera.push_back(pareja);
+                sort(frontera.begin(), frontera.end());
+    }
+
+
+    while (frontera.at(0).preludio.size() != dim){
+
+        nodo n = frontera.at(0);
+        frontera.erase(frontera.cbegin());
+
+        for (int i = 1; i < dim; ++i) {
+            if(find(n.preludio.begin(), n.preludio.end(), i) == n.preludio.end()) {
+                nodo newNodo;
+                newNodo.valor = n.valor + costes.at(n.preludio.back()).at(i);
+                for (int j = 0; j < n.preludio.size(); ++j) {                   //todo::cambiar a copy eficiente
+                    newNodo.preludio.push_back(n.preludio.at(j));
+                }
+                newNodo.preludio.push_back(i);
+
+
+                if (newNodo.preludio.size() == dim - 1){
+                    newNodo.valor = newNodo.valor + costes.at(newNodo.preludio.back()).at(0);
+                    newNodo.preludio.push_back(0);
+                    //sort(frontera.begin(),frontera.end());
+                }
+
+            }
+       }
+
+        if (frontera.at(0).preludio.size() == dim - 1){
+            frontera.at(0).valor = frontera.at(0).valor + costes.at(frontera.at(0).preludio.back()).at(0);
+            frontera.at(0).preludio.push_back(0);
+        }
+
+
+       // sort(frontera.begin(),frontera.end());
+
+    }*/
+
+ }
 
 // Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
 std::vector<std::vector<double>> getMatriz(const string& datosEntrada, int& tamanio)   {
@@ -236,7 +306,7 @@ double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, i
 
 
 int main() {
-    string fichero = R"(..\a13.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a4.tsp)"; // Paso como argumento ?
     int filas;
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -250,20 +320,28 @@ int main() {
 
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
-    //int nMin = caminoMinimo(ciudades, caminos, &camino);
     auto tInit = chrono::high_resolution_clock::now();
-    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    int Cminimo = obtenMejorAV(m, filas, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
+    //int nMin = caminoMinimo(ciudades, caminos, &camino);
+    chrono::duration<double, std::milli> ms_double = tEnd - tInit;
+    cout << "Execution time: " << ms_double.count() << "ms" << endl;
+
+    tInit = chrono::high_resolution_clock::now();
+    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    tEnd = chrono::high_resolution_clock::now();
 
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
         cout << i << " -> ";
     }
     cout << mejorCamino.at(0) << endl;
-    chrono::duration<double, std::milli> ms_double = tEnd - tInit;
+     ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
 
 
     return 0;
 }
+
+
 
