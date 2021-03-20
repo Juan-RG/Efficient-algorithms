@@ -111,38 +111,7 @@ vector<vector<int>> generaCaminos(int dim)    {
     return caminos;
 }
 END DEPRECATED */
-int obtenMejorAVJ(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
-    int coste;
-    double valorMin = INT_MAX;  //valor Minimo
-    int posicionMin = 0;        //posicion
 
-
-    mejor.push_back(0);
-
-    for (int i = 0; i < dim; ++i) { //recorro todas las columnas
-        valorMin = INT_MAX;
-        posicionMin = 0;
-        for (int j = 1; j < dim; ++j) { //recorro las filas
-            if(find(mejor.begin(), mejor.end(), j) == mejor.end()) {
-                if (costes.at(i).at(j) < valorMin && j != i) {
-                    valorMin = costes.at(i).at(j);
-                    posicionMin = j;
-                }
-            }
-        }
-        mejor.push_back(posicionMin);
-    }
-
-    for (int i = 0; i < mejor.size(); ++i) {
-        cout << mejor.at(i)<< " ";
-    }
-   for (int i = 0; i < dim; ++i) {
-        coste = coste + costes.at(i).at(mejor.at(i + 1));
-    }
-
-
-    return coste;
-}
 
 struct nodo{
     double valor;
@@ -154,25 +123,21 @@ struct nodo{
 
 };
 
-struct arista  {
+
+struct arista {
     int nodo;
     double coste;
 };
 
-/**
- * revisar algo estoy haciendo mal
- * @param costes
- * @param dim
- * @param mejor
- * @return
- */
 double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
     vector<int> mejorCamino; mejorCamino.push_back(0);   // Nodo inicial
     double coste = 0, lastNode = 0;  // Coste inicial, nodo inicial
     struct arista mejorAristaLocal{-1, INT_MAX};
 
-    for(int n = 0; n < dim; n++)  {
-        for(int i = 0; i < dim - 1; i++) {
+    cout << "Llamada a obtenMejorAV, dim " << dim << endl;
+
+    for(int n = 0; n < dim - 1; n++)  {
+        for(int i = 0; i < dim; i++) {
             // Descarta nodos repetidos y el propio nodo
             if (i != lastNode && find(mejorCamino.begin(), mejorCamino.end(), i) == mejorCamino.end()) {
                 // Comprueba si es la arista con menor coste
@@ -182,9 +147,8 @@ double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vec
                 }
             }
         }
-        mejorCamino.push_back(mejorAristaLocal.nodo);
+        mejorCamino.push_back(lastNode = mejorAristaLocal.nodo);
         coste += mejorAristaLocal.coste;
-        lastNode = mejorAristaLocal.nodo;
         if (DEBUG_INFO) cout << "Anyadido nodo " << lastNode << " con coste " << mejorAristaLocal.coste << endl;
 
         // Reset valores
@@ -194,7 +158,7 @@ double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vec
 
 
     mejor = mejorCamino;
-    return coste;
+    return coste + costes[lastNode][0];
 }
 
 // Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
@@ -303,7 +267,7 @@ double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, i
             cout << aux[0] << endl;
         }
         costeAux = valorarCamino(costes, aux);
-        if(costeAux < mejorCoste)   {
+        if(costeAux < mejorCoste && costeAux > 0)   {
             mejorCoste = costeAux;
             mejor = aux;
             if(DEBUG_INFO)  {
@@ -322,7 +286,7 @@ double obtenMejorPermutaciones(const std::vector<std::vector<double>>& costes, i
 
 
 int main() {
-    string fichero = R"(..\a4.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a11.tsp)"; // Paso como argumento ?
     int filas;
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -336,26 +300,38 @@ int main() {
 
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
+
+    // AV
     auto tInit = chrono::high_resolution_clock::now();
-    int costeMinimo = obtenMejorAVJ(m, filas, mejorCamino);
-   // int costeMinimo = obtenMejorAV(m, filas, mejorCamino);
+    double costeMinimo = obtenMejorAV(m, filas, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
     chrono::duration<double, std::milli> ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
-/*
-    tInit = chrono::high_resolution_clock::now();
-    double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
-    tEnd = chrono::high_resolution_clock::now();
-*/
+
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
         cout << i << " -> ";
     }
-    //cout << mejorCamino.at(0) << endl;
-     ms_double = tEnd - tInit;
+    cout << mejorCamino.at(0) << endl;
+
+
+    cout << endl << endl;
+
+
+    // FB
+    tInit = chrono::high_resolution_clock::now();
+    costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    tEnd = chrono::high_resolution_clock::now();
+    //int nMin = caminoMinimo(ciudades, caminos, &camino);
+    ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
 
+    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
+    for (auto& i : mejorCamino) {
+        cout << i << " -> ";
+    }
+    cout << mejorCamino.at(0) << endl;
 
     return 0;
 }
