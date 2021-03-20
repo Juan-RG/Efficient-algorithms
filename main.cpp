@@ -111,7 +111,38 @@ vector<vector<int>> generaCaminos(int dim)    {
     return caminos;
 }
 END DEPRECATED */
+int obtenMejorAVJ(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
+    int coste;
+    double valorMin = INT_MAX;  //valor Minimo
+    int posicionMin = 0;        //posicion
 
+
+    mejor.push_back(0);
+
+    for (int i = 0; i < dim; ++i) { //recorro todas las columnas
+        valorMin = INT_MAX;
+        posicionMin = 0;
+        for (int j = 1; j < dim; ++j) { //recorro las filas
+            if(find(mejor.begin(), mejor.end(), j) == mejor.end()) {
+                if (costes.at(i).at(j) < valorMin && j != i) {
+                    valorMin = costes.at(i).at(j);
+                    posicionMin = j;
+                }
+            }
+        }
+        mejor.push_back(posicionMin);
+    }
+
+    for (int i = 0; i < mejor.size(); ++i) {
+        cout << mejor.at(i)<< " ";
+    }
+   for (int i = 0; i < dim; ++i) {
+        coste = coste + costes.at(i).at(mejor.at(i + 1));
+    }
+
+
+    return coste;
+}
 
 struct nodo{
     double valor;
@@ -123,6 +154,10 @@ struct nodo{
 
 };
 
+struct arista  {
+    int nodo;
+    double coste;
+};
 
 /**
  * revisar algo estoy haciendo mal
@@ -131,55 +166,36 @@ struct nodo{
  * @param mejor
  * @return
  */
-int obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
+double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
+    vector<int> mejorCamino; mejorCamino.push_back(0);   // Nodo inicial
+    double coste = 0, lastNode = 0;  // Coste inicial, nodo inicial
+    struct arista mejorAristaLocal{-1, INT_MAX};
 
+    for(int n = 0; n < dim; n++)  {
+        for(int i = 0; i < dim - 1; i++) {
+            // Descarta nodos repetidos y el propio nodo
+            if (i != lastNode && find(mejorCamino.begin(), mejorCamino.end(), i) == mejorCamino.end()) {
+                // Comprueba si es la arista con menor coste
+                if (costes[lastNode][i] > 0 && costes[lastNode][i] < mejorAristaLocal.coste) {
+                    mejorAristaLocal.nodo = i;
+                    mejorAristaLocal.coste = costes[lastNode][i];
+                }
+            }
+        }
+        mejorCamino.push_back(mejorAristaLocal.nodo);
+        coste += mejorAristaLocal.coste;
+        lastNode = mejorAristaLocal.nodo;
+        if (DEBUG_INFO) cout << "Anyadido nodo " << lastNode << " con coste " << mejorAristaLocal.coste << endl;
 
-    /*
-    vector<nodo> frontera;
-    for (int i = 1; i < dim; ++i) {
-                nodo pareja;
-                pareja.valor = costes.at(0).at(i);
-                pareja.preludio.push_back(i);
-                frontera.push_back(pareja);
-                sort(frontera.begin(), frontera.end());
+        // Reset valores
+        mejorAristaLocal.coste = INT_MAX;
+        mejorAristaLocal.nodo = -1;
     }
 
 
-    while (frontera.at(0).preludio.size() != dim){
-
-        nodo n = frontera.at(0);
-        frontera.erase(frontera.cbegin());
-
-        for (int i = 1; i < dim; ++i) {
-            if(find(n.preludio.begin(), n.preludio.end(), i) == n.preludio.end()) {
-                nodo newNodo;
-                newNodo.valor = n.valor + costes.at(n.preludio.back()).at(i);
-                for (int j = 0; j < n.preludio.size(); ++j) {                   //todo::cambiar a copy eficiente
-                    newNodo.preludio.push_back(n.preludio.at(j));
-                }
-                newNodo.preludio.push_back(i);
-
-
-                if (newNodo.preludio.size() == dim - 1){
-                    newNodo.valor = newNodo.valor + costes.at(newNodo.preludio.back()).at(0);
-                    newNodo.preludio.push_back(0);
-                    //sort(frontera.begin(),frontera.end());
-                }
-
-            }
-       }
-
-        if (frontera.at(0).preludio.size() == dim - 1){
-            frontera.at(0).valor = frontera.at(0).valor + costes.at(frontera.at(0).preludio.back()).at(0);
-            frontera.at(0).preludio.push_back(0);
-        }
-
-
-       // sort(frontera.begin(),frontera.end());
-
-    }*/
-
- }
+    mejor = mejorCamino;
+    return coste;
+}
 
 // Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
 std::vector<std::vector<double>> getMatriz(const string& datosEntrada, int& tamanio)   {
@@ -321,21 +337,22 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     auto tInit = chrono::high_resolution_clock::now();
-    int Cminimo = obtenMejorAV(m, filas, mejorCamino);
+    int costeMinimo = obtenMejorAVJ(m, filas, mejorCamino);
+   // int costeMinimo = obtenMejorAV(m, filas, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
     chrono::duration<double, std::milli> ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
-
+/*
     tInit = chrono::high_resolution_clock::now();
     double costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
     tEnd = chrono::high_resolution_clock::now();
-
+*/
     cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
     for (auto& i : mejorCamino) {
         cout << i << " -> ";
     }
-    cout << mejorCamino.at(0) << endl;
+    //cout << mejorCamino.at(0) << endl;
      ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
 
