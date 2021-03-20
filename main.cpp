@@ -112,6 +112,7 @@ vector<vector<int>> generaCaminos(int dim)    {
 }
 END DEPRECATED */
 
+<<<<<<< Updated upstream
 
 struct nodo{
     double valor;
@@ -124,6 +125,13 @@ struct nodo{
 };
 
 
+=======
+struct arista {
+    int nodo;
+    double coste;
+};
+
+>>>>>>> Stashed changes
 /**
  * revisar algo estoy haciendo mal
  * @param costes
@@ -131,6 +139,7 @@ struct nodo{
  * @param mejor
  * @return
  */
+<<<<<<< Updated upstream
 int obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
 
 
@@ -180,6 +189,37 @@ int obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector
     }*/
 
  }
+=======
+double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
+    vector<int> mejorCamino; mejorCamino.push_back(0);   // Nodo inicial
+    double coste = 0, lastNode = 0;  // Coste inicial, nodo inicial
+    struct arista mejorAristaLocal{-1, INT_MAX};
+
+    for(int n = 0; n < dim; n++)  {
+        for(int i = 0; i < dim - 1; i++) {
+            // Descarta nodos repetidos y el propio nodo
+            if (i != lastNode && find(mejorCamino.begin(), mejorCamino.end(), i) == mejorCamino.end()) {
+                // Comprueba si es la arista con menor coste
+                if (costes[lastNode][i] > 0 && costes[lastNode][i] < mejorAristaLocal.coste) {
+                    mejorAristaLocal.nodo = i;
+                    mejorAristaLocal.coste = costes[lastNode][i];
+                }
+            }
+        }
+        mejorCamino.push_back(lastNode = mejorAristaLocal.nodo);
+        coste += mejorAristaLocal.coste;
+        if (DEBUG_INFO) cout << "Anyadido nodo " << lastNode << " con coste " << mejorAristaLocal.coste << endl;
+
+        // Reset valores
+        mejorAristaLocal.coste = INT_MAX;
+        mejorAristaLocal.nodo = -1;
+    }
+
+
+    mejor = mejorCamino;
+    return coste;
+}
+>>>>>>> Stashed changes
 
 // Lee y devuelve la matriz de coste, siendo tamanio la dimensión de la misma
 std::vector<std::vector<double>> getMatriz(const string& datosEntrada, int& tamanio)   {
@@ -321,7 +361,11 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
     auto tInit = chrono::high_resolution_clock::now();
+<<<<<<< Updated upstream
     int Cminimo = obtenMejorAV(m, filas, mejorCamino);
+=======
+    double costeMinimo = obtenMejorAV(m, filas, mejorCamino);
+>>>>>>> Stashed changes
     auto tEnd = chrono::high_resolution_clock::now();
     //int nMin = caminoMinimo(ciudades, caminos, &camino);
     chrono::duration<double, std::milli> ms_double = tEnd - tInit;
