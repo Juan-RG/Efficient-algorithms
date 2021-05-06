@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const bool DEBUG_INFO = true;
+const bool DEBUG_INFO = false;
 
 const bool DEBUG_INFO_EXTENDED = DEBUG_INFO & false;
 
@@ -121,6 +121,12 @@ struct arista {
 };
 
 void obtenerMejor(const vector<std::vector<double>> &vector, int dim, std::vector<int>& vect, std::vector<std::vector<double>> &vector1);
+
+void ejecucionAV(int filas, const vector<std::vector<double>> &m, vector<int> &mejorCamino);
+
+void ejecucionFB(int filas, const vector<std::vector<double>> &m, vector<int> &mejorCamino);
+
+void ejecucionPDinamica(const vector<std::vector<double>> &m);
 
 double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
     vector<int> mejorCamino; mejorCamino.push_back(0);   // Nodo inicial
@@ -382,51 +388,58 @@ int main() {
     using std::chrono::duration_cast;
     using std::chrono::duration;
     using std::chrono::milliseconds;
-
-
+    /**
+   * algoritmio voraz
+   */
     //rellenarMatriz(ciudades, filas);
     auto m = getMatriz(fichero, filas);
-
 
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
                     //   double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);              //todo:aclarar declaracion
    // AV
     auto tInit = chrono::high_resolution_clock::now();
-    double costeMinimo = obtenMejorAV(m, filas, mejorCamino);
+    ejecucionAV(filas, m, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
-    //int nMin = caminoMinimo(ciudades, caminos, &camino);
-    chrono::duration<double, std::milli> ms_double = tEnd - tInit;
+    auto ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
-
-    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
-    for (auto& i : mejorCamino) {
-        cout << i << " -> ";
-    }
-    cout << mejorCamino.at(0) << endl;
-
     cout << endl << endl;
 
+    /**
+       * fin algoritmo voraz
+    */
+    /**
+   * fuerza bruta
+   */
     // FB
     tInit = chrono::high_resolution_clock::now();
-    costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+    ejecucionFB(filas, m, mejorCamino);
     tEnd = chrono::high_resolution_clock::now();
-    //int nMin = caminoMinimo(ciudades, caminos, &camino);
     ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
-
-    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
-    for (auto& i : mejorCamino) {
-        cout << i << " -> ";
-    }
-    cout << mejorCamino.at(0) << endl;
+    cout << endl << endl;
+    /**
+     * fin fuerza bruta
+     */
 
     /**
      * Implementacion de programacion dinamica
      */
+    tInit = chrono::high_resolution_clock::now();
+    ejecucionPDinamica(m);
+    tEnd = chrono::high_resolution_clock::now();
+    ms_double = tEnd - tInit;
+    cout << "Execution time: " << ms_double.count() << "ms" << endl;
+    cout << endl << endl;
+    /**
+     * fin Implementacion de programacion dinamica
+     */
+    //fin programacion dinamica
+    return 0;
+}
 
-    vector<vector<double>> cities = getMatriz(fichero, filas);
-
+void ejecucionPDinamica(const vector<std::vector<double>> &m) {
+    vector<vector<double>> cities = m;
     //matriz de [vertices][2^vertices - 1] --> creo que se podria reducir accediendo a costes con conjuntos de tamaño S == 1
     vector<vector<double>> gtab(cities.size());
     for (int i = 0; i < cities.size(); ++i) {
@@ -445,24 +458,44 @@ int main() {
     }
 
     //gmapa de (conjuntos, indice) == conjuntosVisitados[number][S]
-    std::map<set<int>, int> conjuntosVisitados;
+    map<set<int>, int> conjuntosVisitados;
     //llamo al metodo G desde el vertice 0
     cout << dynamicG(0, S, gtab, cities, conjuntosVisitados, vertices) << "\n";
 
 
-    cout << "0 - ";
+    cout << "0 -> ";
     //Recorro la matriz de minimos vertices para reconstruir el camino
     int conj = S.size();
     int vertice = 0;
     for (int i = 0; i < conj; ++i) {
         vertice = vertices.at(vertice).at(calcularConjunto(S,conjuntosVisitados));
-        cout << vertice << " - ";
+        cout << vertice << " -> ";
         S.erase(vertice);
     }
     cout << "0\n";
+}
 
-    //fin programacion dinamica
-    return 0;
+void ejecucionFB(int filas, const vector<std::vector<double>> &m, vector<int> &mejorCamino) {
+
+    auto costeMinimo = obtenMejorPermutaciones(m, filas, mejorCamino);
+
+    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
+    for (auto& i : mejorCamino) {
+        cout << i << " -> ";
+    }
+    cout << mejorCamino.at(0) << endl;
+}
+
+void ejecucionAV(int filas, const vector<std::vector<double>> &m, vector<int> &mejorCamino) {
+
+    double costeMinimo = obtenMejorAV(m, filas, mejorCamino);
+    //int nMin = caminoMinimo(ciudades, caminos, &camino);
+
+    cout << "Mejor camino encontrado, coste = " << costeMinimo << endl;
+    for (auto& i : mejorCamino) {
+        cout << i << " -> ";
+    }
+    cout << mejorCamino.at(0) << endl;
 }
 
 
