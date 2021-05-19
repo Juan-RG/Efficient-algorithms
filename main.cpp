@@ -419,7 +419,8 @@ template <class T> struct greater_equalH : binary_function <T,T,bool> {
  * @param matriz
  * @return
  */
-double reducirMatriz(std::vector<std::vector<double>>& matriz){
+double reducirMatriz(std::vector<std::vector<double>>& matriz){                                                         /** Mejora podemos guardar al reducir las filas las columnas correspondientes
+ *                                                                                                                             con 0 y asi luego ahorraremos alguna iteracion a la hora de reducir columnas**/
 
     double MAX = DBL_MAX;
     double total = 0;
@@ -505,7 +506,7 @@ tuple<vector<int>, vector<std::vector<double>>, double> ramificacionPoda(const s
     tuple<vector<int>, vector<std::vector<double>>, double> solucion;
 
 
-    while (!explorados.empty()){
+    while (!explorados.empty()){                                                                /**Mejora finalizacion cuando el nodo anterior a la cabeza tenga un coste superior**/
         //saco el primer nodo de la cola
         tuple<vector<int>, vector<std::vector<double>>, double> nodo = explorados.top();
         explorados.pop();
