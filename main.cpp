@@ -9,6 +9,8 @@
 #include <cmath>
 #include <set>
 #include <map>
+#include <cfloat>
+#include <queue>
 
 using namespace std;
 
@@ -127,6 +129,8 @@ void ejecucionAV(int filas, const vector<std::vector<double>> &m, vector<int> &m
 void ejecucionFB(int filas, const vector<std::vector<double>> &m, vector<int> &mejorCamino);
 
 void ejecucionPDinamica(const vector<std::vector<double>> &m);
+
+void ejecucionRamificacionYpoda(const vector<std::vector<double>> &m);
 
 double obtenMejorAV(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor) {
     vector<int> mejorCamino; mejorCamino.push_back(0);   // Nodo inicial
@@ -381,8 +385,202 @@ double dynamicG(int i, set<int>& S,vector<vector<double>>& gtab ,vector<vector<d
 
 
 
+/**                                                                                            Inicio
+ * Inicio Ramificacion y poda
+ *
+ */
+/**
+ * Comparo las tuplas por el coste
+ * @param lhs
+ * @param rhs
+ * @return
+ */
+bool operator<=( const std::tuple<vector<int>, vector<std::vector<double>>, double>& lhs,
+                 const std::tuple<vector<int>, vector<std::vector<double>>, double>& rhs ){
+    return (std::get<2>(lhs) <= std::get<2>(rhs));
+}
+
+bool operator>=( const std::tuple<vector<int>, vector<std::vector<double>>, double>& lhs,
+                 const std::tuple<vector<int>, vector<std::vector<double>>, double>& rhs ){
+    return (std::get<2>(lhs) >= std::get<2>(rhs));
+}
+
+
+template <class T> struct less_equalH : binary_function <T,T,bool> {
+    bool operator() (const T& x, const T& y) const {return x<=y;}
+};
+
+template <class T> struct greater_equalH : binary_function <T,T,bool> {
+    bool operator() (const T& x, const T& y) const {return x>=y;}
+};
+/**
+ * Metodo de reducir filas o columnas
+ * !!!!!!Ojo con el int que tiene comportamientos malos por la precision de los doubles tendremos que ver en el hendrix¡¡¡¡¡¡¡
+ * @param matriz
+ * @return
+ */
+double reducirMatriz(std::vector<std::vector<double>>& matriz){
+
+    double MAX = DBL_MAX;
+    double total = 0;
+    //** se podria marcar en el primer recorrido las columnas que ta tienen 0 para ahorranos el coste de pasar por todas columnas
+    for (int i = 0; i < matriz.size(); ++i) {
+        double minValue = DBL_MAX;
+        for (int j = 0; j < matriz.size(); ++j) {
+            if (matriz.at(i).at(j) < minValue){
+                minValue = matriz.at(i).at(j);
+            }
+
+        }
+
+        if ((minValue != MAX && minValue > 0)){
+            total += minValue;
+            for (int j = 0; j < matriz.size(); ++j) {
+                if (j != i){
+                    matriz.at(i).at(j) -= minValue;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < matriz.size(); ++i) {
+        double minValue = DBL_MAX;
+        for (int j = 0; j < matriz.size(); ++j) {
+            if (matriz.at(j).at(i) < minValue){
+                minValue = matriz.at(j).at(i);
+            }
+
+        }
+
+        if ((minValue != MAX && minValue > 0)){
+            total += minValue;
+            for (int j = 0; j < matriz.size(); ++j) {
+                if (j != i){
+                    matriz.at(j).at(i) -= minValue;
+                }
+            }
+        }
+    }
+
+    return total;
+}
+
+tuple<vector<int>, vector<std::vector<double>>, double> ramificacionPoda(const std::vector<std::vector<double>>& costes, int dim, vector<int>& mejor)    {
+    std::vector<std::vector<double>> matrizNodoRaiz = costes;
+
+    //Diagonales a infinito
+    for (int i = 0; i < matrizNodoRaiz.size(); ++i) {
+        for (int j = 0; j < matrizNodoRaiz.size(); ++j) {
+            if(i == j){
+                matrizNodoRaiz.at(i).at(j) = DBL_MAX;
+            }
+        }
+
+    }
+
+    //obtengo la matriz reducida del nodo raiz
+    double coste = reducirMatriz(matrizNodoRaiz);
+
+    vector<int> camino;
+    camino.push_back(0);
+
+    //Tupla de valores con el vector de camino, la matriz asociada a ese estado el coste del nodo
+    tuple<vector<int>, vector<std::vector<double>>, double> nodoRaiz(camino, matrizNodoRaiz, coste);
+    bool objetivo = true;
+
+    //Priority quede para que ordene la cola por orden creciente como declaro arriba en greater_equal
+    std::priority_queue<tuple<vector<int>, vector<std::vector<double>>, double>, vector<tuple<vector<int>, vector<std::vector<double>>, double>>,
+            greater_equalH<tuple<vector<int>, vector<std::vector<double>>, double>>> explorados;
+
+    //Ya los inserta el 1 el de menos valor
+    explorados.push(nodoRaiz);
+
+    //mostrar_queue(explorados);
+
+    //valor del primer camino conseguido para realizar la poda
+    double valorPoda = 0;
+    bool asignacionPoda = 0;
+
+    //Tupla de retorno
+    tuple<vector<int>, vector<std::vector<double>>, double> solucion;
+
+
+    while (!explorados.empty()){
+        //saco el primer nodo de la cola
+        tuple<vector<int>, vector<std::vector<double>>, double> nodo = explorados.top();
+        explorados.pop();
+
+        double coste = std::get<2>(nodo);
+        bool podarNodo = 0;
+        //compruebo si la poda esta activa y si hay que podar el nodo
+        if (asignacionPoda && (coste > valorPoda)){
+            podarNodo = 1;
+        }
+        //si no hay que podar seguimos generando niveles en el nodo
+        if (!podarNodo){
+            //Recorro desde 1 ya que el 0 es el 1 nodo
+            for (int i = 1; i < costes.size(); ++i) {
+                bool nuevoContenido = 0;
+                //Nuevo camino de nodo y matriz asociada
+                double costeTotalNodo = coste;
+                vector<int> caminoNodo(get<0>(nodo));
+                vector<std::vector<double>> matrizAsociada(get<1>(nodo));
+                //Compruebo si el nodo ha sido visitado o no
+                if(find(caminoNodo.begin(), caminoNodo.end(), i) == caminoNodo.end()) {
+                    //Si no ha sido visitado indico que hay nuevo contenido para evitar nodos repetidos
+                    nuevoContenido = 1;
+                    //sumo el valor de coste de ir al nuevo nodo y lo añado al vector
+                    costeTotalNodo += matrizAsociada.at(caminoNodo.back()).at(i);
+                    caminoNodo.push_back(i);
+                    //Realizo la funcion de reduccion de fila y columna de los nodos correspondientes y elimino la posibilidad de volver al primer 0 cuando corresponde
+                    for (int j = 0; j < costes.size(); ++j) {
+                        //accedo a la antepultima posicion para saber que filas hay que descartar
+                        matrizAsociada.at(caminoNodo.rbegin()[1]).at(j) = DBL_MAX;
+                        matrizAsociada.at(j).at(caminoNodo.back()) = DBL_MAX;
+                        if (caminoNodo.size() < costes.size()){
+                            matrizAsociada.at(caminoNodo.back()).at(0) = DBL_MAX;
+                        }
+                    }
+                }
+                //reduzco la matriz y lo sumo al coste del nodo
+                int costeReducionNodo = reducirMatriz(matrizAsociada);
+                //le sumo el coste de reduccion
+                costeTotalNodo += costeReducionNodo;
+                //si hay contenido lo añadimos a la lista de explorados o nodos vivos
+                if (nuevoContenido){
+                    tuple<vector<int>, vector<std::vector<double>>, double> nodoCoste(caminoNodo, matrizAsociada, costeTotalNodo);
+                    explorados.push(nodoCoste);
+                    //si es una solucion completa y es la primera asigno el coste al nodo * Esto se puede sustituir por una ejecucion del algoritmo voraz
+                    if (caminoNodo.size() == costes.size()){
+                        //si es la 1 vez
+                        if (!asignacionPoda){
+                            solucion = nodoCoste;
+                            valorPoda = costeTotalNodo;
+                            asignacionPoda = 1;
+                            //si no actualizo cuando sea un nodo mejor
+                        } else if (costeTotalNodo <= valorPoda){
+                            valorPoda = costeTotalNodo;
+                            solucion = nodoCoste;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return solucion;
+
+
+}
+
+/**                                                                                            Fin
+ * Fin Ramificacion y poda
+ *
+ */
+
+
 int main() {
-    string fichero = R"(..\a7.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a15.tsp)"; // Paso como argumento ?
     int filas;
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -397,7 +595,7 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
                     //   double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);              //todo:aclarar declaracion
-   // AV
+  // AV
     auto tInit = chrono::high_resolution_clock::now();
     ejecucionAV(filas, m, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
@@ -412,12 +610,14 @@ int main() {
    * fuerza bruta
    */
     // FB
+    /*
     tInit = chrono::high_resolution_clock::now();
     ejecucionFB(filas, m, mejorCamino);
     tEnd = chrono::high_resolution_clock::now();
     ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
     cout << endl << endl;
+*/
     /**
      * fin fuerza bruta
      */
@@ -425,19 +625,52 @@ int main() {
     /**
      * Implementacion de programacion dinamica
      */
+
     tInit = chrono::high_resolution_clock::now();
     ejecucionPDinamica(m);
     tEnd = chrono::high_resolution_clock::now();
     ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
     cout << endl << endl;
+
+    /**
+     * fin Implementacion de programacion dinamica
+     */
+
+    /**
+ * Implementacion Ramificacion y poda
+ */
+
+    tInit = chrono::high_resolution_clock::now();
+    ejecucionRamificacionYpoda(m);
+    tEnd = chrono::high_resolution_clock::now();
+    ms_double = tEnd - tInit;
+    cout << "Execution time: " << ms_double.count() << "ms" << endl;
+    cout << endl << endl;
+
     /**
      * fin Implementacion de programacion dinamica
      */
     //fin programacion dinamica
     return 0;
 }
+void ejecucionRamificacionYpoda(const vector<std::vector<double>> &m) {
+    vector<int> mejorCamino;
+    tuple<vector<int>, vector<std::vector<double>>, double> solucion = ramificacionPoda(m, m.size(), mejorCamino);
 
+    double costesFinal;
+    vector<int> caminoSolcuion(get<0>(solucion));
+    for (int i = 0; i < caminoSolcuion.size(); ++i) {
+        cout << caminoSolcuion.at(i) << " ";
+    }
+    cout << "\n";
+    for (int i = 1; i < caminoSolcuion.size(); ++i) {
+        costesFinal += m.at(caminoSolcuion.at(i-1)).at(caminoSolcuion.at(i));
+    }
+    costesFinal += m.at(caminoSolcuion.back()).at(0);
+
+    cout << "coste final "<< costesFinal<< "\n";
+}
 void ejecucionPDinamica(const vector<std::vector<double>> &m) {
     vector<vector<double>> cities = m;
     //matriz de [vertices][2^vertices - 1] --> creo que se podria reducir accediendo a costes con conjuntos de tamaño S == 1

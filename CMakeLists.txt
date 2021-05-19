@@ -4,3 +4,4 @@ project(P1Git)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(P1Repo main.cpp GreedyTSP.cpp GreedyTSP.h)
+add_executable(generadorTSP generadorTSP.cpp)
