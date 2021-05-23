@@ -329,7 +329,7 @@ void insertarConjunto(set<int> S, map<std::set<int>,int>& mapaConjuntos, int max
     static int n = 0;
     //si el conjunto no existe le asigno su vvalor de N
     if (mapaConjuntos.find(S) == mapaConjuntos.end()){
-        std::pair<std::set<int>, int> pareja(S,n++);
+        std::pair<std::set<int>, int> pareja(S, n++);
         mapaConjuntos.insert(pareja);
         if (n == max){
             n = 0;
@@ -499,29 +499,37 @@ tuple<vector<int>, vector<std::vector<double>>, double> ramificacionPoda(const s
     //mostrar_queue(explorados);
 
     //valor del primer camino conseguido para realizar la poda
-    double valorPoda = 0;
-    bool asignacionPoda = 0;
+    double valorPoda = false;
+    bool asignacionPoda = false;
 
     //Tupla de retorno
     tuple<vector<int>, vector<std::vector<double>>, double> solucion;
 
+    bool continuar = true;
 
-    while (!explorados.empty()){                                                                /**Mejora finalizacion cuando el nodo anterior a la cabeza tenga un coste superior**/
+    while (!explorados.empty() && continuar){                                                                /**Mejora finalizacion cuando el nodo anterior a la cabeza tenga un coste superior**/
         //saco el primer nodo de la cola
         tuple<vector<int>, vector<std::vector<double>>, double> nodo = explorados.top();
         explorados.pop();
 
         double coste = std::get<2>(nodo);
-        bool podarNodo = 0;
+        bool podarNodo = false;
+
+        tuple<vector<int>, vector<std::vector<double>>, double> nodoAnt = explorados.top();
+        double costeNodoAnt = std::get<2>(nodoAnt);
+        //evitamos tener que recorrer toda la lista de explorados
+        if (asignacionPoda && costeNodoAnt > coste){
+            continuar = false;
+        }
         //compruebo si la poda esta activa y si hay que podar el nodo
         if (asignacionPoda && (coste > valorPoda)){
-            podarNodo = 1;
+            podarNodo = true;
         }
         //si no hay que podar seguimos generando niveles en el nodo
         if (!podarNodo){
             //Recorro desde 1 ya que el 0 es el 1 nodo
             for (int i = 1; i < costes.size(); ++i) {
-                bool nuevoContenido = 0;
+                bool nuevoContenido = false;
                 //Nuevo camino de nodo y matriz asociada
                 double costeTotalNodo = coste;
                 vector<int> caminoNodo(get<0>(nodo));
@@ -557,7 +565,7 @@ tuple<vector<int>, vector<std::vector<double>>, double> ramificacionPoda(const s
                         if (!asignacionPoda){
                             solucion = nodoCoste;
                             valorPoda = costeTotalNodo;
-                            asignacionPoda = 1;
+                            asignacionPoda = true;
                             //si no actualizo cuando sea un nodo mejor
                         } else if (costeTotalNodo <= valorPoda){
                             valorPoda = costeTotalNodo;
@@ -581,7 +589,7 @@ tuple<vector<int>, vector<std::vector<double>>, double> ramificacionPoda(const s
 
 
 int main() {
-    string fichero = R"(..\a15.tsp)"; // Paso como argumento ?
+    string fichero = R"(..\a26.tsp)"; // Paso como argumento ?
     int filas;
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -596,7 +604,7 @@ int main() {
     //asigno -1 en el indice del recorrido
     std::vector<int> mejorCamino;
                     //   double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);              //todo:aclarar declaracion
-  // AV
+ // AV
     auto tInit = chrono::high_resolution_clock::now();
     ejecucionAV(filas, m, mejorCamino);
     auto tEnd = chrono::high_resolution_clock::now();
@@ -611,7 +619,7 @@ int main() {
    * fuerza bruta
    */
     // FB
-    /*
+ /*
     tInit = chrono::high_resolution_clock::now();
     ejecucionFB(filas, m, mejorCamino);
     tEnd = chrono::high_resolution_clock::now();
@@ -641,14 +649,14 @@ int main() {
     /**
  * Implementacion Ramificacion y poda
  */
-
+/*
     tInit = chrono::high_resolution_clock::now();
     ejecucionRamificacionYpoda(m);
     tEnd = chrono::high_resolution_clock::now();
     ms_double = tEnd - tInit;
     cout << "Execution time: " << ms_double.count() << "ms" << endl;
     cout << endl << endl;
-
+*/
     /**
      * fin Implementacion de programacion dinamica
      */
@@ -664,6 +672,7 @@ void ejecucionRamificacionYpoda(const vector<std::vector<double>> &m) {
     for (int i = 0; i < caminoSolcuion.size(); ++i) {
         cout << caminoSolcuion.at(i) << " ";
     }
+    cout << "0";
     cout << "\n";
     for (int i = 1; i < caminoSolcuion.size(); ++i) {
         costesFinal += m.at(caminoSolcuion.at(i-1)).at(caminoSolcuion.at(i));
@@ -672,6 +681,7 @@ void ejecucionRamificacionYpoda(const vector<std::vector<double>> &m) {
 
     cout << "coste final "<< costesFinal<< "\n";
 }
+
 void ejecucionPDinamica(const vector<std::vector<double>> &m) {
     vector<vector<double>> cities = m;
     //matriz de [vertices][2^vertices - 1] --> creo que se podria reducir accediendo a costes con conjuntos de tamaño S == 1
