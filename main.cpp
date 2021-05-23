@@ -525,81 +525,169 @@ std::vector<int> TSPRamifPoda(std::vector<std::vector<double>>& matrizCoste, dou
  *                                                  *****************************
  */
 
+constexpr unsigned int str2int(const char* str, int h = 0)
+{
+    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
+}
 
-int main() {
-    string fichero = R"(..\a12.tsp)"; // Paso como argumento ?
-    int filas;
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::duration;
-    using std::chrono::milliseconds;
-    /**
-   * algoritmio voraz
-   */
-    //rellenarMatriz(ciudades, filas);
-    auto m = getMatriz(fichero, filas);
+int main(int argc, char **argv) {
+    if(argc != 3)   {
+        cerr << "Modo de empleo: tsp -opt <nombre_fichero>" << endl;
+        cerr << "Opciones disponibles:" << endl;
+        cerr << "-fb  (Fuerza bruta)" << endl;
+        cerr << "-aV  (Algoritmo voraz)" << endl;
+        cerr << "-pd  (Programación dinámica)" << endl;
+        cerr << "-rp  (Ramificación y poda)" << endl;
+        cerr << "-all (Todos)" << endl;
+        return -1;
+    }
+    else {
 
-    //asigno -1 en el indice del recorrido
-    std::vector<int> mejorCamino;
-    // double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);
- // AV
-    auto tInit = chrono::high_resolution_clock::now();
-    ejecucionAV(filas, m, mejorCamino);
-    auto tEnd = chrono::high_resolution_clock::now();
-    auto ms_double = tEnd - tInit;
-    cout << "Execution time: " << ms_double.count() << "ms" << endl;
-    cout << endl << endl;
+        string fichero(argv[2]);
+        int filas;
+        using std::chrono::high_resolution_clock;
+        using std::chrono::duration_cast;
+        using std::chrono::duration;
+        using std::chrono::milliseconds;
+        /**
+       * algoritmio voraz
+       */
+        //rellenarMatriz(ciudades, filas);
+        auto m = getMatriz(fichero, filas);
+        auto tInit = chrono::high_resolution_clock::now();
+        auto tEnd = chrono::high_resolution_clock::now();
+        auto ms_double = tEnd - tInit;
+        std::vector<int> mejorCamino;
 
-    /**
-       * fin algoritmo voraz
-    */
-    /**
-   * fuerza bruta
-   */
-    // FB
 
-    tInit = chrono::high_resolution_clock::now();
-    ejecucionFB(filas, m, mejorCamino);
-    tEnd = chrono::high_resolution_clock::now();
-    ms_double = tEnd - tInit;
-    cout << "Execution time: " << ms_double.count() << "ms" << endl;
-    cout << endl << endl;
+        switch (str2int(argv[1])) {
+            case str2int("-fb") :
+                cout << "Fuerza bruta" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionFB(filas, m, mejorCamino);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
+                break;
+            case str2int("-av") :
+                //asigno -1 en el indice del recorrido
+                //std::vector<int> mejorCamino;
+                // double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);
+                // AV
+                cout << "Algoritmo voraz" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionAV(filas, m, mejorCamino);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout  << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
 
-    /**
-     * fin fuerza bruta
-     */
+                /**
+                   * fin algoritmo voraz
+                */
+                break;
+            case str2int("-pd") :
+                /**
+               * Implementacion de programacion dinamica
+               */
+                cout << "Programacion dinamica" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionPDinamica(m);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
 
-    /**
-     * Implementacion de programacion dinamica
-     */
+                /**
+                 * fin Implementacion de programacion dinamica
+                 */
+                break;
+            case str2int("-rp") :
+                /**
+                * Implementacion Ramificacion y poda
+                */
 
-    tInit = chrono::high_resolution_clock::now();
-    ejecucionPDinamica(m);
-    tEnd = chrono::high_resolution_clock::now();
-    ms_double = tEnd - tInit;
-    cout << "Execution time: " << ms_double.count() << "ms" << endl;
-    cout << endl << endl;
+                tInit = chrono::high_resolution_clock::now();
+                cout << "Ramificacion y poda" << endl;
+                ejecucionRamificacionYpoda(m);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
 
-    /**
-     * fin Implementacion de programacion dinamica
-     */
+                /**
+                 * fin Implementacion de programacion dinamica
+                 */
+                break;
+            case str2int("-all") :
+                //asigno -1 en el indice del recorrido
+                //std::vector<int> mejorCamino;
+                // double costeMinimo = obtenMejorDynamic(m, filas, mejorCamino);
+                // AV
+                cout << "Algoritmo voraz" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionAV(filas, m, mejorCamino);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
 
-    /**
- * Implementacion Ramificacion y poda
- */
+                /**
+                   * fin algoritmo voraz
+                */
+                /**
+               * fuerza bruta
+               */
+                // FB
+                cout << "Fuerza bruta" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionFB(filas, m, mejorCamino);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
 
-    tInit = chrono::high_resolution_clock::now();
-    ejecucionRamificacionYpoda(m);
-    tEnd = chrono::high_resolution_clock::now();
-    ms_double = tEnd - tInit;
-    cout << "Execution time: " << ms_double.count() << "ms" << endl;
-    cout << endl << endl;
+                /**
+                 * fin fuerza bruta
+                 */
 
-    /**
-     * fin Implementacion de programacion dinamica
-     */
-    //fin programacion dinamica
-    return 0;
+                /**
+                 * Implementacion de programacion dinamica
+                 */
+                cout << "Programacion dinamica" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionPDinamica(m);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
+
+                /**
+                 * fin Implementacion de programacion dinamica
+                 */
+
+                /**
+             * Implementacion Ramificacion y poda
+             */
+                cout << "Ramificacion y poda" << endl;
+                tInit = chrono::high_resolution_clock::now();
+                ejecucionRamificacionYpoda(m);
+                tEnd = chrono::high_resolution_clock::now();
+                ms_double = tEnd - tInit;
+                cout << "Execution time: " << ms_double.count() << "ns" << endl;
+                cout << endl << endl;
+
+                /**
+                 * fin Implementacion de programacion dinamica
+                 */
+                //fin programacion dinamica
+                break;
+
+        }
+
+        return 0;
+    }
 }
 
 void ejecucionRamificacionYpoda(const vector<std::vector<double>> &m) {
