@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int MIN = 0;
+int MIN = 1;
 int MAX = 100;
 
 int main() {
