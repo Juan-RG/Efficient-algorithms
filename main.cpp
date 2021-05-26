@@ -717,6 +717,7 @@ void ejecucionPDinamica(const vector<std::vector<double>> &m) {
         vertices.at(i) = vector<double>((pow(2,cities.size())) - 1, -1);
     }
 
+
     //Genero el conjunto de posibles vertices para ir visitando
     set<int> S;
     for (int i = 1; i < cities.size(); ++i) {

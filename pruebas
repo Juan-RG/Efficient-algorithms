@@ -1,0 +1,27 @@
+#!/bin/bash
+#forma de ejecutar comando tipoEjecucion[-all -pd..] tamanioTSP nuevos[1 | 0] NumeroPruebas incremental[0 | ValorIncremental] UnicFile[0 | nombreFichero]
+#Example of use pruebas -all 12 1 5 0 //hara 5 pruebas creando 5 ficheros diferentes de tama�o 12 con todos algoritmos
+#Example of use pruebas -all 12 1 5 5 //hara 5 pruebas creando 5 ficheros diferentes de tama�o incremental al ultimo valor
+#con todos algoritmos base 12 + 5 
+
+
+
+
+iteraciones=0;
+limite=$4;
+fichero=$2;
+while [ $iteraciones -ne $limite ]; do
+	if [ $3 -eq 1 -a $5 -eq 0 ]; then
+		echo $fichero | ./generador
+	fi
+	if [ $5 -ne 0 ]; then
+		fichero=$((fichero+$5))
+		echo $fichero | ./generador
+	fi
+	if [ "$6" != 0 ]; then
+		./tsp "$1" a"$fichero".tsp >> "$6".solve
+	else
+		./tsp "$1" a"$fichero".tsp >> a"$fichero".solve		
+	fi
+	iteraciones=$((iteraciones+1));
+done
