@@ -1,0 +1,23 @@
+Algoritmo voraz
+Mejor camino encontrado, coste = 302.18
+0 -> 7 -> 2 -> 1 -> 4 -> 9 -> 6 -> 5 -> 8 -> 10 -> 11 -> 3 -> 0
+Execution time: 315887ns
+
+
+Fuerza bruta
+Mejor camino encontrado, coste = 165.843
+0 -> 7 -> 2 -> 1 -> 3 -> 6 -> 10 -> 9 -> 8 -> 5 -> 4 -> 11 -> 0
+Execution time: 54586581707ns
+
+
+Programacion dinamica
+Coste final: 165.843
+0 -> 7 -> 2 -> 1 -> 3 -> 6 -> 10 -> 9 -> 8 -> 5 -> 4 -> 11 -> 0
+Execution time: 1881248353ns
+
+
+Ramificacion y poda
+0 -> 7 -> 2 -> 1 -> 3 -> 6 -> 10 -> 9 -> 8 -> 5 -> 4 -> 11 -> 0
+coste final 165.843
+Execution time: 12621086ns
+

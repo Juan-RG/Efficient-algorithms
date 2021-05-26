@@ -1,0 +1,9 @@
+Ramificacion y poda
+0 -> 8 -> 1 -> 15 -> 5 -> 11 -> 19 -> 14 -> 12 -> 16 -> 4 -> 17 -> 7 -> 9 -> 13 -> 3 -> 2 -> 18 -> 10 -> 6 -> 0
+coste final 166.9
+Execution time: 1006524010ns
+
+Programacion dinamica
+Coste final: 166.9
+0 -> 8 -> 1 -> 15 -> 5 -> 11 -> 19 -> 14 -> 12 -> 16 -> 4 -> 17 -> 7 -> 9 -> 13 -> 3 -> 2 -> 18 -> 10 -> 6 -> 0
+Execution time: 3482541718754ns
