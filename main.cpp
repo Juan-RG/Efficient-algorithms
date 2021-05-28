@@ -728,8 +728,7 @@ void ejecucionPDinamica(const vector<std::vector<double>> &m) {
     map<set<int>, int> conjuntosVisitados;
     //llamo al metodo G desde el vertice 0
     cout <<"Coste final: " << dynamicG(0, S, gtab, cities, conjuntosVisitados, vertices) << "\n";
-
-
+    
     cout << "0 -> ";
     //Recorro la matriz de minimos vertices para reconstruir el camino
     int conj = S.size();
